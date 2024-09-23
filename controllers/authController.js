@@ -12,18 +12,17 @@ const signToken = (id) => {
   });
 };
 
-function createSendToken(user, statusCode, res) {
+function createSendToken(user, statusCode, req, res) {
   const token = signToken(user._id);
   // a cookie is a small piece of data that a server sends to the user's web browser. The browser may store it and send it back with the next request to the same server.
   // Typically, it's used to tell if two requests came from the same browser — keeping a user logged-in, for example. It remembers stateful information for the stateless HTTP protocol.
-  const cookieOptions = {
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
-  };
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-  res.cookie('jwt', token, cookieOptions);
+    secure: req.secure || req.headers('x-forwarded-proto') === 'https',
+  });
 
   // remove the password from the output
   user.password = undefined;
@@ -44,7 +43,7 @@ exports.signup = catchAsync(async function (req, res) {
 
   const url = `${req.protocol}://${req.get('host')}/myAccount`;
   await new Email(newUser, url).sendWelcome();
-  createSendToken(newUser, 201, res);
+  createSendToken(newUser, 201, req, res);
 });
 
 //@login
@@ -65,7 +64,7 @@ exports.login = catchAsync(async function (req, res, next) {
 
   // 3) If everything is ok, send token to client
 
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 //@ logout
@@ -145,7 +144,7 @@ exports.resetPassword = catchAsync(async function (req, res, next) {
   await user.save();
   // 4 - log the user in, send JWT
 
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 //@protecting a route middleware, authorization
@@ -241,7 +240,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   // User.findByIdAndUpdate will NOT work as intended!
 
   // 4) Log user in, send JWT
-  createSendToken(user, 200, res);
+  createSendToken(user, 200, req, res);
 });
 
 exports.restrictTo = (...roles) => {

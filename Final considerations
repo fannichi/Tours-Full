@@ -1,0 +1,12 @@
+Challenges:
+
+- Restrict reviewing a tour to only users who booked a booking.
+- implement getting nested bookings for example to a certain tours, or to a certain Ids.
+- add sold out to a booking when the maximum group members is reached.
+- advanced auth, confirm email addresses, keep user logged in with refresh tokens, two factor authentication etc..
+- implement sign up form.
+- add review right on the website
+- prevent duplicate bookings from same users, unless different dates are specified.
+- implement favorites etc
+- My reviews page to see your reviews.
+- implement Manage pages for manager/admin to do cruds on tours, users, reviews etc...
